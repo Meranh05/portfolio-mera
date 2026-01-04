@@ -92,11 +92,10 @@ function AppearancePageContent() {
               <button
                 key={theme.id}
                 onClick={() => handleThemeChange(theme.id)}
-                className={`relative p-4 rounded-xl border-2 transition-all text-left ${
-                  selectedTheme === theme.id
+                className={`relative p-4 rounded-xl border-2 transition-all text-left ${selectedTheme === theme.id
                     ? "border-primary bg-primary/10"
                     : "border-border hover:border-primary/50 bg-secondary/50"
-                }`}
+                  }`}
               >
                 {selectedTheme === theme.id && (
                   <div className="absolute top-3 right-3">
@@ -132,16 +131,17 @@ function AppearancePageContent() {
               <button
                 key={accent.id}
                 onClick={() => handleAccentChange(accent.id)}
-                className={`relative p-4 rounded-xl border-2 transition-all ${
-                  selectedAccent === accent.id ? "border-primary" : "border-border hover:border-primary/50"
-                }`}
+                className={`relative p-4 rounded-xl border-2 transition-all ${selectedAccent === accent.id ? "border-primary" : "border-border hover:border-primary/50"
+                  }`}
               >
                 <div
                   className="w-12 h-12 rounded-full mx-auto mb-2 ring-2 ring-offset-2 ring-offset-card transition-all"
-                  style={{
-                    backgroundColor: accent.color,
-                    ringColor: selectedAccent === accent.id ? accent.color : "transparent",
-                  }}
+                  style={
+                    {
+                      backgroundColor: accent.color,
+                      "--tw-ring-color": selectedAccent === accent.id ? accent.color : "transparent",
+                    } as React.CSSProperties
+                  }
                 />
                 <p className="text-sm text-center text-foreground font-medium">{accent.name}</p>
                 {selectedAccent === accent.id && (

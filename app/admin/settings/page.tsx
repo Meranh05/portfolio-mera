@@ -28,9 +28,9 @@ import {
 import { useClickEffect } from "@/hooks/use-click-effect"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { getCVData, setCVData, type CVData } from "@/lib/cv-store"
+import { getCVData, setCVData, clearCVData, type CVData } from "@/lib/cv-store"
 
-import { resetAllData } from "@/lib/portfolio-store"
+import { resetAllData, migrateDataToDatabase } from "@/lib/portfolio-store"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,6 +59,7 @@ export default function AdminSettingsPage() {
   })
   const [isSaving, setIsSaving] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
+  const [isMigrating, setIsMigrating] = useState(false)
 
 
 
@@ -97,7 +98,7 @@ export default function AdminSettingsPage() {
 
     setIsUploading(true)
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const fileUrl = URL.createObjectURL(file)
       const newCV: CVData = {
         fileName: file.name,
@@ -107,7 +108,7 @@ export default function AdminSettingsPage() {
       }
 
       setCvFile(newCV)
-      setCVData(newCV)
+      await setCVData(newCV)
       setIsUploading(false)
 
       toast.success("Upload thành công!", {
@@ -139,15 +140,10 @@ export default function AdminSettingsPage() {
     [processFile],
   )
 
-  const handleRemoveCV = (e: React.MouseEvent) => {
+  const handleRemoveCV = async (e: React.MouseEvent) => {
     createParticles(e, "sparkle")
     setCvFile(null)
-    setCVData({
-      fileName: "",
-      fileUrl: "",
-      uploadedAt: "",
-      fileSize: "",
-    })
+    await clearCVData()
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -189,19 +185,20 @@ export default function AdminSettingsPage() {
 
   const handleResetAllData = async () => {
     setIsResetting(true)
-
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    resetAllData()
-
+    await resetAllData()
     setIsResetting(false)
-    toast.success("Đã đặt lại dữ liệu!", {
-      description: "Tất cả dữ liệu đã được xóa và đặt về mặc định.",
-    })
+  }
 
-    setTimeout(() => {
-      window.location.reload()
-    }, 1000)
+  const handleMigrateData = async (e: React.MouseEvent) => {
+    createParticles(e, "confetti")
+    setIsMigrating(true)
+    const result = await migrateDataToDatabase()
+    setIsMigrating(false)
+    if (result.success) {
+      toast.success(result.message)
+    } else {
+      toast.error(result.message)
+    }
   }
 
   const formatFileSize = (bytes: number): string => {
@@ -490,6 +487,47 @@ export default function AdminSettingsPage() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Migration Section */}
+          <Card className="bg-card border-border animate-slide-up" style={{ animationDelay: "0.2s" }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <RefreshCw className="w-5 h-5 text-primary" />
+                Di chuyển dữ liệu
+              </CardTitle>
+              <CardDescription>
+                Đồng bộ hóa dữ liệu từ trình duyệt của bạn lên máy chủ (Database)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                <AlertCircle className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="font-medium text-foreground mb-1">Backup dữ liệu</h4>
+                  <div className="text-sm text-muted-foreground mb-4">
+                    <p>Nếu bạn đã có dữ liệu trong trình duyệt, hãy nhấn nút dưới đây để lưu chúng vào Database vĩnh viễn.</p>
+                  </div>
+                  <Button
+                    onClick={handleMigrateData}
+                    disabled={isMigrating}
+                    className="bg-primary text-primary-foreground smooth-scale"
+                  >
+                    {isMigrating ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Đang di chuyển...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-4 h-4 mr-2" />
+                        Di chuyển lên Database
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </CardContent>

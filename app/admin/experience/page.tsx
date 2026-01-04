@@ -66,14 +66,14 @@ function ExperiencePageContent() {
     setNewTech("")
   }
 
-  const handleAddExperience = (e: React.MouseEvent) => {
+  const handleAddExperience = async (e: React.MouseEvent) => {
     createParticles(e, "confetti")
     if (!formData.title || !formData.company || !formData.period) {
       toast.error("Vui lòng điền đầy đủ thông tin!")
       return
     }
 
-    const newExperiences = addExperience({
+    const newExperiences = await addExperience({
       ...formData,
       description: formData.description.filter((d) => d.trim() !== ""),
     })
@@ -83,11 +83,11 @@ function ExperiencePageContent() {
     toast.success("Đã thêm kinh nghiệm mới!")
   }
 
-  const handleUpdateExperience = (e: React.MouseEvent) => {
+  const handleUpdateExperience = async (e: React.MouseEvent) => {
     createParticles(e, "sparkle")
     if (!editingId) return
 
-    const newExperiences = updateExperience(editingId, {
+    const newExperiences = await updateExperience(editingId, {
       ...formData,
       description: formData.description.filter((d) => d.trim() !== ""),
     })
@@ -97,18 +97,18 @@ function ExperiencePageContent() {
     toast.success("Đã cập nhật kinh nghiệm!")
   }
 
-  const handleDeleteExperience = (e: React.MouseEvent, id: string) => {
+  const handleDeleteExperience = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     createParticles(e, "confetti")
-    const newExperiences = deleteExperience(id)
+    const newExperiences = await deleteExperience(id)
     setExperiences(newExperiences)
     toast.success("Đã xóa kinh nghiệm!")
   }
 
-  const handleToggleVisibility = (e: React.MouseEvent, id: string, visible: boolean) => {
+  const handleToggleVisibility = async (e: React.MouseEvent, id: string, visible: boolean) => {
     e.stopPropagation()
     createParticles(e, "sparkle")
-    const newExperiences = updateExperience(id, { visible: !visible })
+    const newExperiences = await updateExperience(id, { visible: !visible })
     setExperiences(newExperiences)
     toast.success(visible ? "Đã ẩn kinh nghiệm" : "Đã hiện kinh nghiệm")
   }
@@ -187,9 +187,8 @@ function ExperiencePageContent() {
               return (
                 <Card
                   key={exp.id}
-                  className={`bg-card border-border transition-all cursor-pointer hover:border-primary/50 ${
-                    editingId === exp.id ? "ring-2 ring-primary" : ""
-                  } ${!exp.visible ? "opacity-50" : ""}`}
+                  className={`bg-card border-border transition-all cursor-pointer hover:border-primary/50 ${editingId === exp.id ? "ring-2 ring-primary" : ""
+                    } ${!exp.visible ? "opacity-50" : ""}`}
                   onClick={() => startEditing(exp)}
                 >
                   <CardContent className="p-4">

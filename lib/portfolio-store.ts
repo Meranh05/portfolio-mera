@@ -170,39 +170,143 @@ const MESSAGES_KEY = "portfolio_messages"
 const AUTO_SKILLS_KEY = "portfolio_auto_skills"
 
 // Skills functions
+// Memory cache for immediate returns
+let aboutCache: AboutInfo = defaultAboutInfo
+let projectsCache: Project[] = []
+let experiencesCache: Experience[] = []
+let skillsCache: Skill[] = []
+let reposCache: GitHubRepo[] = []
+let messagesCache: ContactMessage[] = []
+
+// Initialization flag
+let isInitialized = false
+
+// Initialize store from API
+export async function initStore() {
+  if (typeof window === "undefined" || isInitialized) return
+
+  const endpoints = [
+    { key: ABOUT_KEY, url: "/api/about", cache: (v: any) => aboutCache = v },
+    { key: PROJECTS_KEY, url: "/api/projects", cache: (v: any) => projectsCache = v },
+    { key: EXPERIENCES_KEY, url: "/api/experiences", cache: (v: any) => experiencesCache = v },
+    { key: SKILLS_KEY, url: "/api/skills", cache: (v: any) => skillsCache = v },
+    { key: GITHUB_REPOS_KEY, url: "/api/github", cache: (v: any) => reposCache = v },
+    { key: MESSAGES_KEY, url: "/api/messages", cache: (v: any) => messagesCache = v }
+  ]
+
+  try {
+    await Promise.all(endpoints.map(async (endpoint) => {
+      try {
+        const res = await fetch(endpoint.url)
+        if (!res.ok) {
+          console.error(`Failed to fetch ${endpoint.url}: ${res.status}`)
+          return
+        }
+        const contentType = res.headers.get("content-type")
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error(`Endpoint ${endpoint.url} returned non-JSON content: ${contentType}`)
+          return
+        }
+        const data = await res.json()
+        if (data && !data.error) {
+          endpoint.cache(data)
+          localStorage.setItem(endpoint.key, JSON.stringify(data))
+        }
+      } catch (err) {
+        console.error(`Error processing ${endpoint.url}:`, err)
+      }
+    }))
+
+    isInitialized = true
+    dispatchSyncEvent("sync-all")
+  } catch (error) {
+    console.error("Critical error in initStore:", error)
+  }
+}
+
+// Trigger initialization on import (client-side only)
+if (typeof window !== "undefined") {
+  initStore()
+}
+
+// Skills functions
 export function getSkills(): Skill[] {
   if (typeof window === "undefined") return defaultSkills
   const stored = localStorage.getItem(SKILLS_KEY)
-  return stored ? JSON.parse(stored) : defaultSkills
+  skillsCache = stored ? JSON.parse(stored) : defaultSkills
+  return skillsCache
 }
 
-export function saveSkills(skills: Skill[]): void {
+export async function saveSkills(skills: Skill[]): Promise<void> {
   if (typeof window === "undefined") return
+
+  // Save to memory and LS for immediate feedback
+  skillsCache = skills
   localStorage.setItem(SKILLS_KEY, JSON.stringify(skills))
+
+  // Persist to DB
+  for (const skill of skills) {
+    await fetch("/api/skills", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(skill)
+    })
+  }
+
   dispatchSyncEvent(SKILLS_KEY)
 }
 
-export function updateSkill(id: string, updates: Partial<Skill>): Skill[] {
-  const skills = getSkills()
+// Helper for single updates
+export async function updateSkill(id: string, updates: Partial<Skill>): Promise<Skill[]> {
+  const skills = [...getSkills()]
   const index = skills.findIndex((s) => s.id === id)
   if (index !== -1) {
-    skills[index] = { ...skills[index], ...updates }
-    saveSkills(skills)
+    const updatedSkill = { ...skills[index], ...updates }
+    skills[index] = updatedSkill
+    skillsCache = skills
+
+    // Optimistic update
+    localStorage.setItem(SKILLS_KEY, JSON.stringify(skills))
+
+    // Save to DB
+    await fetch("/api/skills", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedSkill)
+    })
+
+    dispatchSyncEvent(SKILLS_KEY)
   }
   return skills
 }
 
-export function addSkill(skill: Omit<Skill, "id">): Skill[] {
-  const skills = getSkills()
-  const newSkill = { ...skill, id: Date.now().toString() }
-  skills.push(newSkill)
-  saveSkills(skills)
+export async function addSkill(skill: Omit<Skill, "id">): Promise<Skill[]> {
+  const newSkill: Skill = {
+    ...skill,
+    id: Math.random().toString(36).substr(2, 9),
+  }
+  const skills = [...getSkills(), newSkill]
+  localStorage.setItem(SKILLS_KEY, JSON.stringify(skills))
+
+  await fetch("/api/skills", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newSkill)
+  })
+
+  skillsCache = skills
+  dispatchSyncEvent(SKILLS_KEY)
   return skills
 }
 
-export function deleteSkill(id: string): Skill[] {
+export async function deleteSkill(id: string): Promise<Skill[]> {
   const skills = getSkills().filter((s) => s.id !== id)
-  saveSkills(skills)
+  skillsCache = skills
+  localStorage.setItem(SKILLS_KEY, JSON.stringify(skills))
+
+  await fetch(`/api/skills?id=${id}`, { method: "DELETE" })
+
+  dispatchSyncEvent(SKILLS_KEY)
   return skills
 }
 
@@ -210,12 +314,22 @@ export function deleteSkill(id: string): Skill[] {
 export function getAboutInfo(): AboutInfo {
   if (typeof window === "undefined") return defaultAboutInfo
   const stored = localStorage.getItem(ABOUT_KEY)
-  return stored ? JSON.parse(stored) : defaultAboutInfo
+  aboutCache = stored ? JSON.parse(stored) : defaultAboutInfo
+  return aboutCache
 }
 
-export function saveAboutInfo(info: AboutInfo): void {
+export async function saveAboutInfo(info: AboutInfo): Promise<void> {
   if (typeof window === "undefined") return
+
+  aboutCache = info
   localStorage.setItem(ABOUT_KEY, JSON.stringify(info))
+
+  await fetch("/api/about", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(info)
+  })
+
   dispatchSyncEvent(ABOUT_KEY)
 }
 
@@ -223,28 +337,52 @@ export function saveAboutInfo(info: AboutInfo): void {
 export function getProjects(): Project[] {
   if (typeof window === "undefined") return defaultProjects
   const stored = localStorage.getItem(PROJECTS_KEY)
-  return stored ? JSON.parse(stored) : defaultProjects
+  projectsCache = stored ? JSON.parse(stored) : defaultProjects
+  return projectsCache
 }
 
-export function saveProjects(projects: Project[]): void {
+export async function saveProjects(projects: Project[]): Promise<void> {
   if (typeof window === "undefined") return
+
+  projectsCache = projects
   localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
+
+  // Persist all (simplification for this store)
+  for (const project of projects) {
+    await fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(project)
+    })
+  }
+
   dispatchSyncEvent(PROJECTS_KEY)
   calculateAndSaveAutoSkills()
 }
 
-export function updateProject(id: string, updates: Partial<Project>): Project[] {
-  const projects = getProjects()
+export async function updateProject(id: string, updates: Partial<Project>): Promise<Project[]> {
+  const projects = [...getProjects()]
   const index = projects.findIndex((p) => p.id === id)
   if (index !== -1) {
-    projects[index] = { ...projects[index], ...updates, updatedAt: new Date().toISOString().split("T")[0] }
-    saveProjects(projects)
+    const updatedProject = { ...projects[index], ...updates, updatedAt: new Date().toISOString().split("T")[0] }
+    projects[index] = updatedProject
+    projectsCache = projects
+
+    // Optimistic LS update
+    localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
+
+    await fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedProject)
+    })
+
+    dispatchSyncEvent(PROJECTS_KEY)
   }
   return projects
 }
 
-export function addProject(project: Omit<Project, "id" | "createdAt" | "updatedAt">): Project[] {
-  const projects = getProjects()
+export async function addProject(project: Omit<Project, "id" | "createdAt" | "updatedAt">): Promise<Project[]> {
   const now = new Date().toISOString().split("T")[0]
   const newProject = {
     ...project,
@@ -252,92 +390,169 @@ export function addProject(project: Omit<Project, "id" | "createdAt" | "updatedA
     createdAt: now,
     updatedAt: now,
   }
-  projects.unshift(newProject)
-  saveProjects(projects)
+
+  const projects = [newProject as Project, ...getProjects()]
+  projectsCache = projects
+
+  // Optimistic
+  localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
+
+  await fetch("/api/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newProject)
+  })
+
+  dispatchSyncEvent(PROJECTS_KEY)
+  calculateAndSaveAutoSkills()
   return projects
 }
 
-export function deleteProject(id: string): Project[] {
+export async function deleteProject(id: string): Promise<Project[]> {
   const projects = getProjects().filter((p) => p.id !== id)
-  saveProjects(projects)
+  projectsCache = projects
+  localStorage.setItem(PROJECTS_KEY, JSON.stringify(projects))
+
+  await fetch(`/api/projects?id=${id}`, { method: "DELETE" })
+
+  dispatchSyncEvent(PROJECTS_KEY)
   return projects
 }
 
 export function getExperiences(): Experience[] {
   if (typeof window === "undefined") return defaultExperiences
   const stored = localStorage.getItem(EXPERIENCES_KEY)
-  return stored ? JSON.parse(stored) : defaultExperiences
+  experiencesCache = stored ? JSON.parse(stored) : defaultExperiences
+  return experiencesCache
 }
 
-export function saveExperiences(experiences: Experience[]): void {
+export async function saveExperiences(experiences: Experience[]): Promise<void> {
   if (typeof window === "undefined") return
+
+  experiencesCache = experiences
   localStorage.setItem(EXPERIENCES_KEY, JSON.stringify(experiences))
+
+  for (const exp of experiences) {
+    await fetch("/api/experiences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(exp)
+    })
+  }
+
   dispatchSyncEvent(EXPERIENCES_KEY)
   calculateAndSaveAutoSkills()
 }
 
-export function updateExperience(id: string, updates: Partial<Experience>): Experience[] {
-  const experiences = getExperiences()
+export async function updateExperience(id: string, updates: Partial<Experience>): Promise<Experience[]> {
+  const experiences = [...getExperiences()]
   const index = experiences.findIndex((e) => e.id === id)
   if (index !== -1) {
-    experiences[index] = { ...experiences[index], ...updates }
-    saveExperiences(experiences)
+    const updatedExp = { ...experiences[index], ...updates }
+    experiences[index] = updatedExp
+    experiencesCache = experiences
+
+    // Optimistic
+    localStorage.setItem(EXPERIENCES_KEY, JSON.stringify(experiences))
+
+    await fetch("/api/experiences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedExp)
+    })
+
+    dispatchSyncEvent(EXPERIENCES_KEY)
   }
   return experiences
 }
 
-export function addExperience(experience: Omit<Experience, "id">): Experience[] {
-  const experiences = getExperiences()
+export async function addExperience(experience: Omit<Experience, "id">): Promise<Experience[]> {
   const newExperience = { ...experience, id: Date.now().toString() }
-  experiences.unshift(newExperience)
-  saveExperiences(experiences)
+  const experiences = [newExperience as Experience, ...getExperiences()]
+  experiencesCache = experiences
+
+  // Optimistic
+  localStorage.setItem(EXPERIENCES_KEY, JSON.stringify(experiences))
+
+  await fetch("/api/experiences", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newExperience)
+  })
+
+  dispatchSyncEvent(EXPERIENCES_KEY)
+  calculateAndSaveAutoSkills()
   return experiences
 }
 
-export function deleteExperience(id: string): Experience[] {
+export async function deleteExperience(id: string): Promise<Experience[]> {
   const experiences = getExperiences().filter((e) => e.id !== id)
-  saveExperiences(experiences)
+  experiencesCache = experiences
+  localStorage.setItem(EXPERIENCES_KEY, JSON.stringify(experiences))
+
+  await fetch(`/api/experiences?id=${id}`, { method: "DELETE" })
+
+  dispatchSyncEvent(EXPERIENCES_KEY)
   return experiences
 }
 
 export function getMessages(): ContactMessage[] {
   if (typeof window === "undefined") return []
   const stored = localStorage.getItem(MESSAGES_KEY)
-  return stored ? JSON.parse(stored) : []
+  messagesCache = stored ? JSON.parse(stored) : []
+  return messagesCache
 }
 
-export function saveMessages(messages: ContactMessage[]): void {
+export async function saveMessages(messages: ContactMessage[]): Promise<void> {
   if (typeof window === "undefined") return
+  messagesCache = messages
   localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages))
   dispatchSyncEvent(MESSAGES_KEY)
 }
 
-export function addMessage(message: Omit<ContactMessage, "id" | "read" | "createdAt">): ContactMessage[] {
-  const messages = getMessages()
-  const newMessage = {
-    ...message,
-    id: Date.now().toString(),
-    read: false,
-    createdAt: new Date().toISOString(),
-  }
-  messages.unshift(newMessage)
-  saveMessages(messages)
+export async function addMessage(message: Omit<ContactMessage, "id" | "read" | "createdAt">): Promise<ContactMessage[]> {
+  const res = await fetch("/api/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(message)
+  })
+  const newMessage = await res.json()
+
+  const messages = [newMessage, ...getMessages()]
+  messagesCache = messages
+  localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages))
+
+  dispatchSyncEvent(MESSAGES_KEY)
   return messages
 }
 
-export function markMessageAsRead(id: string): ContactMessage[] {
-  const messages = getMessages()
+export async function markMessageAsRead(id: string): Promise<ContactMessage[]> {
+  const messages = [...getMessages()]
   const index = messages.findIndex((m) => m.id === id)
   if (index !== -1) {
     messages[index] = { ...messages[index], read: true }
-    saveMessages(messages)
+    messagesCache = messages
+    localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages))
+
+    await fetch("/api/messages", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, read: true })
+    })
+
+    dispatchSyncEvent(MESSAGES_KEY)
   }
   return messages
 }
 
-export function deleteMessage(id: string): ContactMessage[] {
+export async function deleteMessage(id: string): Promise<ContactMessage[]> {
   const messages = getMessages().filter((m) => m.id !== id)
-  saveMessages(messages)
+  messagesCache = messages
+  localStorage.setItem(MESSAGES_KEY, JSON.stringify(messages))
+
+  await fetch(`/api/messages?id=${id}`, { method: "DELETE" })
+
+  dispatchSyncEvent(MESSAGES_KEY)
   return messages
 }
 
@@ -355,22 +570,41 @@ export function saveGitHubUsername(username: string): void {
 export function getGitHubRepos(): GitHubRepo[] {
   if (typeof window === "undefined") return []
   const stored = localStorage.getItem(GITHUB_REPOS_KEY)
-  return stored ? JSON.parse(stored) : []
+  reposCache = stored ? JSON.parse(stored) : []
+  return reposCache
 }
 
-export function saveGitHubRepos(repos: GitHubRepo[]): void {
+export async function saveGitHubRepos(repos: GitHubRepo[]): Promise<void> {
   if (typeof window === "undefined") return
+  reposCache = repos
   localStorage.setItem(GITHUB_REPOS_KEY, JSON.stringify(repos))
+
+  await fetch("/api/github", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ repos })
+  })
+
   dispatchSyncEvent(GITHUB_REPOS_KEY)
   calculateAndSaveAutoSkills()
 }
 
-export function updateRepoVisibility(id: number, visible: boolean, featured = false): GitHubRepo[] {
-  const repos = getGitHubRepos()
+export async function updateRepoVisibility(id: number, visible: boolean, featured = false): Promise<GitHubRepo[]> {
+  const repos = [...getGitHubRepos()]
   const index = repos.findIndex((r) => r.id === id)
   if (index !== -1) {
-    repos[index] = { ...repos[index], visible, featured }
-    saveGitHubRepos(repos)
+    const updatedRepo = { ...repos[index], visible, featured }
+    repos[index] = updatedRepo
+    reposCache = repos
+    localStorage.setItem(GITHUB_REPOS_KEY, JSON.stringify(repos))
+
+    await fetch("/api/github", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, visible, featured })
+    })
+
+    dispatchSyncEvent(GITHUB_REPOS_KEY)
   }
   return repos
 }
@@ -612,12 +846,16 @@ export function calculateAndSaveAutoSkills(): AutoCalculatedSkill[] {
 // Views tracking
 export function getViews(): number {
   if (typeof window === "undefined") return 0
-  return Number.parseInt(localStorage.getItem(VIEWS_KEY) || "0", 10)
+  const stored = localStorage.getItem(VIEWS_KEY)
+  return stored ? Number.parseInt(stored, 10) : 0
 }
 
-export function incrementViews(): number {
+export async function incrementViews(): Promise<number> {
   if (typeof window === "undefined") return 0
-  const views = getViews() + 1
+
+  const res = await fetch("/api/stats", { method: "POST" })
+  const { views } = await res.json()
+
   localStorage.setItem(VIEWS_KEY, views.toString())
   return views
 }
@@ -643,16 +881,34 @@ export function getDashboardStats(): DashboardStats {
   }
 }
 
-export function resetAllData(): void {
+// Data Migration Utility
+export async function migrateDataToDatabase() {
+  if (typeof window === "undefined") return { success: false, message: "Only available in browser" }
+
+  try {
+    const about = getAboutInfo()
+    const projects = getProjects()
+    const experiences = getExperiences()
+    const skills = getSkills()
+    const repos = getGitHubRepos()
+
+    // Push each to DB
+    await saveAboutInfo(about)
+    await saveProjects(projects)
+    await saveExperiences(experiences)
+    await saveSkills(skills)
+    await saveGitHubRepos(repos)
+
+    return { success: true, message: "Đã di chuyển dữ liệu thành công!" }
+  } catch (error) {
+    console.error("Migration failed:", error)
+    return { success: false, message: "Lỗi di chuyển dữ liệu" }
+  }
+}
+
+// Reset everything
+export async function resetAllData() {
   if (typeof window === "undefined") return
-  localStorage.removeItem(SKILLS_KEY)
-  localStorage.removeItem(ABOUT_KEY)
-  localStorage.removeItem(PROJECTS_KEY)
-  localStorage.removeItem(EXPERIENCES_KEY)
-  localStorage.removeItem(MESSAGES_KEY)
-  localStorage.removeItem(GITHUB_REPOS_KEY)
-  localStorage.removeItem(GITHUB_USERNAME_KEY)
-  localStorage.removeItem(AUTO_SKILLS_KEY)
   localStorage.removeItem(VIEWS_KEY)
   dispatchSyncEvent("reset-all")
 }

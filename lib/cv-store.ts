@@ -17,6 +17,24 @@ const defaultCV: CVData = {
   fileSize: "245 KB",
 }
 
+// Initialize from API
+export async function initCVStore() {
+  if (typeof window === "undefined") return
+  try {
+    const res = await fetch("/api/cv")
+    const data = await res.json()
+    if (data && !data.error) {
+      localStorage.setItem(CV_STORAGE_KEY, JSON.stringify(data))
+    }
+  } catch (error) {
+    console.error("Failed to init CV store:", error)
+  }
+}
+
+if (typeof window !== "undefined") {
+  initCVStore()
+}
+
 export function getCVData(): CVData {
   if (typeof window === "undefined") return defaultCV
 
@@ -31,12 +49,21 @@ export function getCVData(): CVData {
   return defaultCV
 }
 
-export function setCVData(data: CVData): void {
+export async function setCVData(data: CVData): Promise<void> {
   if (typeof window === "undefined") return
+
+  // Optimistic
   localStorage.setItem(CV_STORAGE_KEY, JSON.stringify(data))
+
+  await fetch("/api/cv", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
 }
 
-export function clearCVData(): void {
+export async function clearCVData(): Promise<void> {
   if (typeof window === "undefined") return
   localStorage.removeItem(CV_STORAGE_KEY)
+  await fetch("/api/cv", { method: "DELETE" })
 }

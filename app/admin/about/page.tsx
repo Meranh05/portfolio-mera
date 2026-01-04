@@ -50,7 +50,7 @@ export default function AdminAboutPage() {
     setIsSaving(true)
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    saveAboutInfo(aboutInfo)
+    await saveAboutInfo(aboutInfo)
     setIsSaving(false)
     toast.success("Đã lưu thông tin thành công!")
   }

@@ -5,7 +5,7 @@ import type React from "react"
 import { cn } from "@/lib/utils"
 
 interface FloatingElementProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   className?: string
   duration?: number
   delay?: number

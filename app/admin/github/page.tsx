@@ -92,14 +92,14 @@ function GitHubPageContent() {
     }
   }
 
-  const handleToggleVisibility = (id: number, currentVisible: boolean, featured: boolean) => {
-    const updated = updateRepoVisibility(id, !currentVisible, featured)
+  const handleToggleVisibility = async (id: number, currentVisible: boolean, featured: boolean) => {
+    const updated = await updateRepoVisibility(id, !currentVisible, featured)
     setRepos(updated)
     toast.success(!currentVisible ? "Đã hiển thị project" : "Đã ẩn project")
   }
 
-  const handleToggleFeatured = (id: number, visible: boolean, currentFeatured: boolean) => {
-    const updated = updateRepoVisibility(id, visible, !currentFeatured)
+  const handleToggleFeatured = async (id: number, visible: boolean, currentFeatured: boolean) => {
+    const updated = await updateRepoVisibility(id, visible, !currentFeatured)
     setRepos(updated)
     toast.success(!currentFeatured ? "Đã đánh dấu nổi bật" : "Đã bỏ đánh dấu nổi bật")
   }

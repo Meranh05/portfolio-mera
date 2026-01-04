@@ -45,31 +45,31 @@ export default function AdminSkillsPage() {
     setSkills(getSkills())
   }, [])
 
-  const handleToggleVisibility = (id: string) => {
-    const updated = updateSkill(id, { visible: !skills.find((s) => s.id === id)?.visible })
+  const handleToggleVisibility = async (id: string) => {
+    const updated = await updateSkill(id, { visible: !skills.find((s) => s.id === id)?.visible })
     setSkills(updated)
     toast.success("Cập nhật hiển thị thành công!")
   }
 
-  const handleUpdateLevel = (id: string, level: number) => {
-    const updated = updateSkill(id, { level })
+  const handleUpdateLevel = async (id: string, level: number) => {
+    const updated = await updateSkill(id, { level })
     setSkills(updated)
   }
 
-  const handleSaveSkill = (skill: Skill) => {
-    const updated = updateSkill(skill.id, skill)
+  const handleSaveSkill = async (skill: Skill) => {
+    const updated = await updateSkill(skill.id, skill)
     setSkills(updated)
     setEditingSkill(null)
     toast.success("Đã lưu thay đổi!")
   }
 
-  const handleAddSkill = (e: React.MouseEvent) => {
+  const handleAddSkill = async (e: React.MouseEvent) => {
     createParticles(e, "confetti")
     if (!newSkill.name.trim()) {
       toast.error("Vui lòng nhập tên kỹ năng!")
       return
     }
-    const updated = addSkill(newSkill)
+    const updated = await addSkill(newSkill)
     setSkills(updated)
     setNewSkill({
       name: "",
@@ -83,9 +83,9 @@ export default function AdminSkillsPage() {
     toast.success("Thêm kỹ năng mới thành công!")
   }
 
-  const handleDeleteSkill = (id: string, e: React.MouseEvent) => {
+  const handleDeleteSkill = async (id: string, e: React.MouseEvent) => {
     createParticles(e, "snow")
-    const updated = deleteSkill(id)
+    const updated = await deleteSkill(id)
     setSkills(updated)
     toast.success("Đã xóa kỹ năng!")
   }

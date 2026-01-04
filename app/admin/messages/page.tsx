@@ -26,18 +26,18 @@ function MessagesPageContent() {
     toast.success("Đã làm mới danh sách!")
   }
 
-  const handleSelectMessage = (message: ContactMessage) => {
+  const handleSelectMessage = async (message: ContactMessage) => {
     setSelectedMessage(message)
     if (!message.read) {
-      const newMessages = markMessageAsRead(message.id)
+      const newMessages = await markMessageAsRead(message.id)
       setMessages(newMessages)
     }
   }
 
-  const handleDeleteMessage = (e: React.MouseEvent, id: string) => {
+  const handleDeleteMessage = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     createParticles(e, "confetti")
-    const newMessages = deleteMessage(id)
+    const newMessages = await deleteMessage(id)
     setMessages(newMessages)
     if (selectedMessage?.id === id) {
       setSelectedMessage(null)
@@ -90,18 +90,16 @@ function MessagesPageContent() {
               messages.map((message) => (
                 <Card
                   key={message.id}
-                  className={`bg-card border-border cursor-pointer transition-all hover:border-primary/50 ${
-                    selectedMessage?.id === message.id ? "ring-2 ring-primary" : ""
-                  } ${!message.read ? "border-l-4 border-l-primary" : ""}`}
+                  className={`bg-card border-border cursor-pointer transition-all hover:border-primary/50 ${selectedMessage?.id === message.id ? "ring-2 ring-primary" : ""
+                    } ${!message.read ? "border-l-4 border-l-primary" : ""}`}
                   onClick={() => handleSelectMessage(message)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                            message.read ? "bg-secondary" : "bg-primary/20"
-                          }`}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center ${message.read ? "bg-secondary" : "bg-primary/20"
+                            }`}
                         >
                           {message.read ? (
                             <MailOpen className="w-5 h-5 text-muted-foreground" />

@@ -93,14 +93,14 @@ function AdminProjectsPageContent() {
     setNewTag("")
   }
 
-  const handleAddProject = (e: React.MouseEvent) => {
+  const handleAddProject = async (e: React.MouseEvent) => {
     createParticles(e, "confetti")
     if (!formData.title) {
       toast.error("Vui lòng nhập tên dự án!")
       return
     }
 
-    const newProjects = addProject({
+    const newProjects = await addProject({
       title: formData.title,
       description: formData.description,
       image: formData.image || "/project-management-team.png",
@@ -118,37 +118,37 @@ function AdminProjectsPageContent() {
     toast.success("Đã thêm dự án mới!")
   }
 
-  const handleUpdateProject = (e: React.MouseEvent) => {
+  const handleUpdateProject = async (e: React.MouseEvent) => {
     createParticles(e, "sparkle")
     if (!editingId) return
 
-    const newProjects = updateProject(editingId, formData)
+    const newProjects = await updateProject(editingId, formData)
     setProjects(newProjects)
     setEditingId(null)
     resetForm()
     toast.success("Đã cập nhật dự án!")
   }
 
-  const handleDeleteProject = (e: React.MouseEvent, id: string) => {
+  const handleDeleteProject = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
     createParticles(e, "confetti")
-    const newProjects = deleteProject(id)
+    const newProjects = await deleteProject(id)
     setProjects(newProjects)
     toast.success("Đã xóa dự án!")
   }
 
-  const handleToggleVisibility = (e: React.MouseEvent, id: string, visible: boolean) => {
+  const handleToggleVisibility = async (e: React.MouseEvent, id: string, visible: boolean) => {
     e.stopPropagation()
     createParticles(e, "sparkle")
-    const newProjects = updateProject(id, { visible: !visible })
+    const newProjects = await updateProject(id, { visible: !visible })
     setProjects(newProjects)
     toast.success(visible ? "Đã ẩn dự án" : "Đã hiện dự án")
   }
 
-  const handleToggleFeatured = (e: React.MouseEvent, id: string, featured: boolean) => {
+  const handleToggleFeatured = async (e: React.MouseEvent, id: string, featured: boolean) => {
     e.stopPropagation()
     createParticles(e, "sparkle")
-    const newProjects = updateProject(id, { featured: !featured })
+    const newProjects = await updateProject(id, { featured: !featured })
     setProjects(newProjects)
     toast.success(featured ? "Đã bỏ nổi bật" : "Đã đánh dấu nổi bật")
   }
