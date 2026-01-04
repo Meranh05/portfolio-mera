@@ -11,7 +11,7 @@ import { MagneticButton } from "@/components/animations/magnetic-button"
 import { toast } from "sonner"
 import { getCVData } from "@/lib/cv-store"
 import { useAboutSync } from "@/hooks/use-portfolio-sync"
-import { useThemeContext } from "@/components/theme-provider"
+import { useThemeContext } from "@/components/ThemeProvider"
 
 const navItems = [
   { label: "Câu chuyện", href: "#about" },
@@ -111,9 +111,8 @@ export function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-background/90 backdrop-blur-md border-b border-border shadow-lg" : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-background/90 backdrop-blur-md border-b border-border shadow-lg" : "bg-transparent"
+        }`}
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -141,15 +140,13 @@ export function Header() {
                   key={item.href}
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
-                  className={`text-sm relative py-2 transition-colors cursor-pointer ${
-                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`text-sm relative py-2 transition-colors cursor-pointer ${isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {item.label}
                   <span
-                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary transform origin-left transition-transform duration-300 ${
-                      isActive ? "scale-x-100" : "scale-x-0"
-                    }`}
+                    className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary transform origin-left transition-transform duration-300 ${isActive ? "scale-x-100" : "scale-x-0"
+                      }`}
                   />
                 </a>
               )
@@ -198,9 +195,8 @@ export function Header() {
       </div>
 
       <div
-        className={`md:hidden bg-background/95 backdrop-blur-md border-b border-border overflow-hidden transition-all duration-300 ${
-          mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`md:hidden bg-background/95 backdrop-blur-md border-b border-border overflow-hidden transition-all duration-300 ${mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          }`}
       >
         <nav className="container mx-auto px-4 py-4 flex flex-col gap-4">
           {navItems.map((item, index) => (

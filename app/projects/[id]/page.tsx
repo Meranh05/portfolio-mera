@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ProjectDetailClient } from "@/components/project-detail-client"
+import { ProjectDetailClient } from "@/components/ProjectDetailClient"
 
 const projectsData: Record<string, ProjectData> = {
   "fintech-dashboard": {

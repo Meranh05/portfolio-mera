@@ -1,7 +1,7 @@
 "use client"
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
+import { Header } from "@/components/Header"
+import { Footer } from "@/components/Footer"
 import { FadeIn } from "@/components/animations/fade-in"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Shield, Eye, Lock, FileText, Mail, Calendar } from "lucide-react"

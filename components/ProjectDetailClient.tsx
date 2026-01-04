@@ -10,7 +10,7 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerContainer } from "@/components/animations/stagger-container"
 import { useClickEffect } from "@/hooks/use-click-effect"
 import { MagneticButton } from "@/components/animations/magnetic-button"
-import { CursorGlow } from "@/components/cursor-glow"
+import { CursorGlow } from "@/components/CursorGlow"
 import { toast } from "sonner"
 
 interface ProjectData {

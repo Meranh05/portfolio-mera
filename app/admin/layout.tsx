@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { usePathname } from "next/navigation"
-import { AdminSidebar } from "@/components/admin/sidebar"
+import { AdminSidebar } from "@/components/admin/Sidebar"
 
 export default function AdminLayout({
   children,

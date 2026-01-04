@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/ThemeProvider"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin", "vietnamese"] })
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     description: "Portfolio của Full Stack Developer với kinh nghiệm xây dựng các ứng dụng web hiện đại",
     type: "website",
   },
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export const viewport = {
