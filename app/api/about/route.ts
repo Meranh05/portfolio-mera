@@ -16,7 +16,7 @@ export async function GET() {
                 name: "Mera",
                 title: "Full Stack Developer",
                 subtitle: "& UI/UX Designer",
-                bio: "Chào mừng đến với portfolio của tôi. Hãy thêm thông tin từ trang Admin.",
+                bio: "Chào mừng đến với portfolio của tôi.",
                 quote: "Code là nghệ thuật, và tôi là người nghệ sĩ.",
                 yearsExperience: 0,
                 avatar: "",
