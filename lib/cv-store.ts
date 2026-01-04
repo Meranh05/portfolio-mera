@@ -1,4 +1,5 @@
-// Simple client-side store for CV - In production, use database
+import { db } from "@/lib/firebase"
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore"
 
 export type CVData = {
   fileName: string
@@ -17,13 +18,15 @@ const defaultCV: CVData = {
   fileSize: "245 KB",
 }
 
-// Initialize from API
+// Initialize from Firestore
 export async function initCVStore() {
   if (typeof window === "undefined") return
   try {
-    const res = await fetch("/api/cv")
-    const data = await res.json()
-    if (data && !data.error) {
+    const docRef = doc(db, "cv", "current")
+    const docSnap = await getDoc(docRef)
+
+    if (docSnap.exists()) {
+      const data = docSnap.data() as CVData
       localStorage.setItem(CV_STORAGE_KEY, JSON.stringify(data))
     }
   } catch (error) {
@@ -55,15 +58,17 @@ export async function setCVData(data: CVData): Promise<void> {
   // Optimistic
   localStorage.setItem(CV_STORAGE_KEY, JSON.stringify(data))
 
-  await fetch("/api/cv", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  })
+  try {
+    await setDoc(doc(db, "cv", "current"), data)
+  } catch (e) {
+    console.error("Error saving CV to FB", e)
+  }
 }
 
 export async function clearCVData(): Promise<void> {
   if (typeof window === "undefined") return
   localStorage.removeItem(CV_STORAGE_KEY)
-  await fetch("/api/cv", { method: "DELETE" })
+  try {
+    await deleteDoc(doc(db, "cv", "current"))
+  } catch (e) { console.error(e) }
 }
