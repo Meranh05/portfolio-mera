@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { Suspense, useEffect, useState } from "react"
-import { AdminSidebar } from "@/components/admin/sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -401,11 +400,8 @@ function GitHubPageContent() {
 
 export default function AdminGitHubPage() {
   return (
-    <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
-      <Suspense fallback={null}>
-        <GitHubPageContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={null}>
+      <GitHubPageContent />
+    </Suspense>
   )
 }

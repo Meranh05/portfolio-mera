@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState, useRef, useCallback, useEffect } from "react"
-import { AdminSidebar } from "@/components/admin/sidebar"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -220,320 +219,316 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <AdminSidebar />
+    <div className="flex-1 p-8 overflow-y-auto">
+      <div className="mb-8 animate-slide-up">
+        <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground">Quản lý thông tin cá nhân và CV của bạn.</p>
+      </div>
 
-      <main className="flex-1 p-8">
-        <div className="mb-8 animate-slide-up">
-          <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground">Quản lý thông tin cá nhân và CV của bạn.</p>
-        </div>
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* CV Upload Section */}
+        <Card className="bg-card border-border animate-slide-up">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <FileText className="w-5 h-5 text-primary" />
+              Quản lý CV
+            </CardTitle>
+            <CardDescription>Upload CV của bạn để khách truy cập có thể tải xuống.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Upload Zone */}
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-xl p-8 transition-all duration-300 text-center",
+                isDragging
+                  ? "border-primary bg-primary/10 scale-[1.02]"
+                  : "border-border hover:border-primary/50 hover:bg-secondary/30",
+                isUploading && "pointer-events-none opacity-60",
+              )}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileSelect} />
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          {/* CV Upload Section */}
-          <Card className="bg-card border-border animate-slide-up">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <FileText className="w-5 h-5 text-primary" />
-                Quản lý CV
-              </CardTitle>
-              <CardDescription>Upload CV của bạn để khách truy cập có thể tải xuống.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Upload Zone */}
-              <div
-                className={cn(
-                  "border-2 border-dashed rounded-xl p-8 transition-all duration-300 text-center",
-                  isDragging
-                    ? "border-primary bg-primary/10 scale-[1.02]"
-                    : "border-border hover:border-primary/50 hover:bg-secondary/30",
-                  isUploading && "pointer-events-none opacity-60",
-                )}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={handleFileSelect} />
-
-                {isUploading ? (
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
-                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    </div>
-                    <p className="text-muted-foreground">Đang tải lên...</p>
+              {isUploading ? (
+                <div className="space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   </div>
-                ) : cvFile?.fileName ? (
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
-                      <CheckCircle className="w-8 h-8 text-green-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{cvFile.fileName}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {cvFile.fileSize} • {formatDate(cvFile.uploadedAt)}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-center gap-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handlePreviewCV}
-                        className="smooth-scale bg-transparent"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Xem
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleDownloadCV}
-                        className="smooth-scale bg-transparent"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Tải xuống
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRemoveCV}
-                        className="smooth-scale text-red-400 hover:text-red-500 hover:bg-red-500/10 bg-transparent"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Xóa
-                      </Button>
-                    </div>
+                  <p className="text-muted-foreground">Đang tải lên...</p>
+                </div>
+              ) : cvFile?.fileName ? (
+                <div className="space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-green-500/20 flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{cvFile.fileName}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {cvFile.fileSize} • {formatDate(cvFile.uploadedAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-3">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-primary"
+                      onClick={handlePreviewCV}
+                      className="smooth-scale bg-transparent"
                     >
-                      Thay đổi file
+                      <Eye className="w-4 h-4 mr-2" />
+                      Xem
                     </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Upload className="w-8 h-8 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">Kéo thả file CV vào đây</p>
-                      <p className="text-sm text-muted-foreground">hoặc click để chọn file (PDF, tối đa 5MB)</p>
-                    </div>
-                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="smooth-scale">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Chọn file
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDownloadCV}
+                      className="smooth-scale bg-transparent"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Tải xuống
                     </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Status info */}
-              <div className="flex items-start gap-3 p-4 bg-secondary/50 rounded-lg">
-                <AlertCircle className="w-5 h-5 text-primary mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-foreground">Lưu ý</p>
-                  <p className="text-muted-foreground">
-                    File CV sẽ được hiển thị trên trang công khai. Đảm bảo không chứa thông tin nhạy cảm.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Profile Section */}
-          <Card className="bg-card border-border animate-slide-up" style={{ animationDelay: "0.1s" }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <User className="w-5 h-5 text-primary" />
-                Thông tin cá nhân
-              </CardTitle>
-              <CardDescription>Cập nhật thông tin liên hệ hiển thị trên website.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  Họ và tên
-                </Label>
-                <Input
-                  id="name"
-                  value={profile.name}
-                  onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  className="bg-secondary border-border"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={profile.email}
-                  onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                  className="bg-secondary border-border"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-muted-foreground" />
-                  Số điện thoại
-                </Label>
-                <Input
-                  id="phone"
-                  value={profile.phone}
-                  onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="bg-secondary border-border"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="location" className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  Địa chỉ
-                </Label>
-                <Input
-                  id="location"
-                  value={profile.location}
-                  onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-                  className="bg-secondary border-border"
-                />
-              </div>
-
-              <Button
-                className="w-full bg-primary text-primary-foreground mt-4 smooth-scale"
-                onClick={handleSaveProfile}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
-                    Đang lưu...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 mr-2" />
-                    Lưu thông tin
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Reset Data Section */}
-          <Card className="bg-card border-border animate-slide-up lg:col-span-2" style={{ animationDelay: "0.2s" }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <RefreshCw className="w-5 h-5 text-red-500" />
-                Đặt lại dữ liệu
-              </CardTitle>
-              <CardDescription>
-                Xóa tất cả dữ liệu và đặt về trạng thái mặc định. Hành động này không thể hoàn tác.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <AlertTriangle className="w-6 h-6 text-red-500 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <h4 className="font-medium text-foreground mb-1">Cảnh báo</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Thao tác này sẽ xóa toàn bộ: dự án, kinh nghiệm làm việc, kỹ năng, GitHub repos, tin nhắn, và tất cả
-                    các thiết lập cá nhân. Dữ liệu sẽ được đặt về trạng thái rỗng để bạn bắt đầu thêm mới từ đầu.
-                  </p>
-                  <div className="text-sm text-muted-foreground mb-4">
-                    <p className="font-medium text-foreground mb-2">Sau khi reset, hệ thống sẽ:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      <li>Tự động tính toán skills từ tech stack của dự án bạn thêm</li>
-                      <li>Hiển thị tỷ lệ % các ngôn ngữ/framework dựa trên số lần sử dụng</li>
-                      <li>Đồng bộ realtime giữa admin và trang chính</li>
-                    </ul>
-                  </div>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" className="smooth-scale">
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Đặt lại tất cả dữ liệu
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-card border-border">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-foreground">Bạn chắc chắn muốn đặt lại?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Tất cả dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục. Bạn sẽ cần thêm lại tất cả dự án,
-                          kinh nghiệm và thông tin từ đầu.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel className="bg-secondary text-foreground">Hủy</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleResetAllData}
-                          className="bg-red-500 hover:bg-red-600 text-white"
-                          disabled={isResetting}
-                        >
-                          {isResetting ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                              Đang xóa...
-                            </>
-                          ) : (
-                            "Xác nhận đặt lại"
-                          )}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Migration Section */}
-          <Card className="bg-card border-border animate-slide-up" style={{ animationDelay: "0.2s" }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <RefreshCw className="w-5 h-5 text-primary" />
-                Di chuyển dữ liệu
-              </CardTitle>
-              <CardDescription>
-                Đồng bộ hóa dữ liệu từ trình duyệt của bạn lên máy chủ (Database)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/10">
-                <AlertCircle className="w-6 h-6 text-primary shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <h4 className="font-medium text-foreground mb-1">Backup dữ liệu</h4>
-                  <div className="text-sm text-muted-foreground mb-4">
-                    <p>Nếu bạn đã có dữ liệu trong trình duyệt, hãy nhấn nút dưới đây để lưu chúng vào Database vĩnh viễn.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRemoveCV}
+                      className="smooth-scale text-red-400 hover:text-red-500 hover:bg-red-500/10 bg-transparent"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Xóa
+                    </Button>
                   </div>
                   <Button
-                    onClick={handleMigrateData}
-                    disabled={isMigrating}
-                    className="bg-primary text-primary-foreground smooth-scale"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-primary"
                   >
-                    {isMigrating ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        Đang di chuyển...
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Di chuyển lên Database
-                      </>
-                    )}
+                    Thay đổi file
                   </Button>
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Upload className="w-8 h-8 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">Kéo thả file CV vào đây</p>
+                    <p className="text-sm text-muted-foreground">hoặc click để chọn file (PDF, tối đa 5MB)</p>
+                  </div>
+                  <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="smooth-scale">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Chọn file
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Status info */}
+            <div className="flex items-start gap-3 p-4 bg-secondary/50 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-primary mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-foreground">Lưu ý</p>
+                <p className="text-muted-foreground">
+                  File CV sẽ được hiển thị trên trang công khai. Đảm bảo không chứa thông tin nhạy cảm.
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </main >
-    </div >
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile Section */}
+        <Card className="bg-card border-border animate-slide-up" style={{ animationDelay: "0.1s" }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <User className="w-5 h-5 text-primary" />
+              Thông tin cá nhân
+            </CardTitle>
+            <CardDescription>Cập nhật thông tin liên hệ hiển thị trên website.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="flex items-center gap-2">
+                <User className="w-4 h-4 text-muted-foreground" />
+                Họ và tên
+              </Label>
+              <Input
+                id="name"
+                value={profile.name}
+                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                className="bg-secondary border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={profile.email}
+                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                className="bg-secondary border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                Số điện thoại
+              </Label>
+              <Input
+                id="phone"
+                value={profile.phone}
+                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+                className="bg-secondary border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location" className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                Địa chỉ
+              </Label>
+              <Input
+                id="location"
+                value={profile.location}
+                onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                className="bg-secondary border-border"
+              />
+            </div>
+
+            <Button
+              className="w-full bg-primary text-primary-foreground mt-4 smooth-scale"
+              onClick={handleSaveProfile}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin mr-2" />
+                  Đang lưu...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Lưu thông tin
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Reset Data Section */}
+        <Card className="bg-card border-border animate-slide-up lg:col-span-2" style={{ animationDelay: "0.2s" }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-foreground">
+              <RefreshCw className="w-5 h-5 text-red-500" />
+              Đặt lại dữ liệu
+            </CardTitle>
+            <CardDescription>
+              Xóa tất cả dữ liệu và đặt về trạng thái mặc định. Hành động này không thể hoàn tác.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <AlertTriangle className="w-6 h-6 text-red-500 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="font-medium text-foreground mb-1">Cảnh báo</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Thao tác này sẽ xóa toàn bộ: dự án, kinh nghiệm làm việc, kỹ năng, GitHub repos, tin nhắn, và tất cả
+                  các thiết lập cá nhân. Dữ liệu sẽ được đặt về trạng thái rỗng để bạn bắt đầu thêm mới từ đầu.
+                </p>
+                <div className="text-sm text-muted-foreground mb-4">
+                  <p className="font-medium text-foreground mb-2">Sau khi reset, hệ thống sẽ:</p>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Tự động tính toán skills từ tech stack của dự án bạn thêm</li>
+                    <li>Hiển thị tỷ lệ % các ngôn ngữ/framework dựa trên số lần sử dụng</li>
+                    <li>Đồng bộ realtime giữa admin và trang chính</li>
+                  </ul>
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="smooth-scale">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Đặt lại tất cả dữ liệu
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="bg-card border-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-foreground">Bạn chắc chắn muốn đặt lại?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tất cả dữ liệu sẽ bị xóa vĩnh viễn và không thể khôi phục. Bạn sẽ cần thêm lại tất cả dự án,
+                        kinh nghiệm và thông tin từ đầu.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="bg-secondary text-foreground">Hủy</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleResetAllData}
+                        className="bg-red-500 hover:bg-red-600 text-white"
+                        disabled={isResetting}
+                      >
+                        {isResetting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                            Đang xóa...
+                          </>
+                        ) : (
+                          "Xác nhận đặt lại"
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Migration Section */}
+        <Card className="bg-card border-border animate-slide-up" style={{ animationDelay: "0.2s" }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="w-5 h-5 text-primary" />
+              Di chuyển dữ liệu
+            </CardTitle>
+            <CardDescription>
+              Đồng bộ hóa dữ liệu từ trình duyệt của bạn lên máy chủ (Database)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/5 border border-primary/10">
+              <AlertCircle className="w-6 h-6 text-primary shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-medium text-foreground mb-1">Backup dữ liệu</h4>
+                <div className="text-sm text-muted-foreground mb-4">
+                  <p>Nếu bạn đã có dữ liệu trong trình duyệt, hãy nhấn nút dưới đây để lưu chúng vào Database vĩnh viễn.</p>
+                </div>
+                <Button
+                  onClick={handleMigrateData}
+                  disabled={isMigrating}
+                  className="bg-primary text-primary-foreground smooth-scale"
+                >
+                  {isMigrating ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Đang di chuyển...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Di chuyển lên Database
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }

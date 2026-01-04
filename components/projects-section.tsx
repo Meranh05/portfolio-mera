@@ -15,6 +15,62 @@ import { toast } from "sonner"
 import { useProjectsSync, useGitHubReposSync } from "@/hooks/use-portfolio-sync"
 import type { Project } from "@/lib/portfolio-store"
 
+function ProjectThumbnail({ project }: { project: Project }) {
+  const { title, techs, tags } = project
+
+  // Deterministic color generation based on title
+  const getGradient = (str: string) => {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    const h1 = Math.abs(hash % 360)
+    const h2 = (h1 + 40) % 360
+    return `linear-gradient(135deg, hsl(${h1}, 70%, 40%), hsl(${h2}, 80%, 20%))`
+  }
+
+  const gradient = getGradient(title)
+  const mainTech = techs[0] || tags[0] || "Code"
+
+  // Only show custom image if it's NOT the placeholder
+  const hasCustomImage = project.image &&
+    !project.image.includes("placeholder.svg") &&
+    !project.image.includes("github-repository-code.jpg")
+
+  if (hasCustomImage) {
+    return (
+      <Image
+        src={project.image}
+        alt={project.title}
+        width={600}
+        height={400}
+        className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+      />
+    )
+  }
+
+  return (
+    <div
+      className="w-full h-48 flex flex-col items-center justify-center p-6 relative overflow-hidden group-hover:scale-110 transition-transform duration-500"
+      style={{ background: gradient }}
+    >
+      <div className="absolute inset-0 opacity-20" style={{
+        backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+        backgroundSize: '20px 20px'
+      }} />
+      <div className="z-10 text-white/90 font-mono text-xs uppercase tracking-widest mb-2 opacity-60">
+        {project.id.startsWith('github-') ? 'GitHub Repository' : 'Project'}
+      </div>
+      <div className="z-10 text-white font-bold text-2xl text-center line-clamp-2 px-2 drop-shadow-lg">
+        {title}
+      </div>
+      <div className="mt-4 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-white/80 text-xs border border-white/20">
+        {mainTech}
+      </div>
+    </div>
+  )
+}
+
 export function ProjectsSection() {
   const { createParticles } = useClickEffect()
   const { projects, isLoading: projectsLoading } = useProjectsSync()
@@ -140,9 +196,8 @@ export function ProjectsSection() {
                 key={project.id}
                 href={project.id.startsWith("github-") ? project.github : `/projects/${project.id}`}
                 target={project.id.startsWith("github-") ? "_blank" : undefined}
-                className={`group bg-card rounded-xl border overflow-hidden card-hover block relative ${
-                  project.featured ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
-                }`}
+                className={`group bg-card rounded-xl border overflow-hidden card-hover block relative ${project.featured ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
+                  }`}
                 onClick={(e) => {
                   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
                   createParticles(
@@ -165,13 +220,7 @@ export function ProjectsSection() {
                 )}
 
                 <div className="relative overflow-hidden">
-                  <Image
-                    src={project.image || "/placeholder.svg?height=400&width=600&query=project"}
-                    alt={project.title}
-                    width={600}
-                    height={400}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
+                  <ProjectThumbnail project={project} />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                     <div className="flex gap-2">
                       <Button

@@ -377,6 +377,7 @@ export async function updateProject(id: string, updates: Partial<Project>): Prom
       body: JSON.stringify(updatedProject)
     })
 
+    calculateAndSaveAutoSkills()
     dispatchSyncEvent(PROJECTS_KEY)
   }
   return projects
@@ -415,6 +416,7 @@ export async function deleteProject(id: string): Promise<Project[]> {
 
   await fetch(`/api/projects?id=${id}`, { method: "DELETE" })
 
+  calculateAndSaveAutoSkills()
   dispatchSyncEvent(PROJECTS_KEY)
   return projects
 }

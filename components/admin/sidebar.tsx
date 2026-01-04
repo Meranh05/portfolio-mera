@@ -56,7 +56,7 @@ export function AdminSidebar() {
   }, [])
 
   return (
-    <aside className="w-64 bg-card border-r border-border min-h-screen flex flex-col relative overflow-hidden">
+    <aside className="w-64 bg-card border-r border-border h-full flex flex-col relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 pointer-events-none" />
 
       <div className="p-6 relative z-10">
@@ -72,7 +72,7 @@ export function AdminSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 px-4 relative z-10">
+      <nav className="flex-1 px-4 relative z-10 overflow-y-auto scrollbar-hide py-2">
         <ul className="space-y-1">
           {navItems.map((item, index) => {
             const isActive = pathname === item.href
