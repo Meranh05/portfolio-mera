@@ -14,9 +14,13 @@ function AutoSkillBar({ skill, isVisible, index }: { skill: AutoCalculatedSkill;
   const [width, setWidth] = useState(0)
 
   useEffect(() => {
+    if (skill.percentage === 0) return
+
     if (isVisible) {
-      const timeout = setTimeout(() => setWidth(skill.percentage), 100 + index * 100)
+      const timeout = setTimeout(() => setWidth(skill.percentage), 100 + index * 50)
       return () => clearTimeout(timeout)
+    } else {
+      setWidth(skill.percentage)
     }
   }, [isVisible, skill.percentage, index])
 
@@ -27,7 +31,7 @@ function AutoSkillBar({ skill, isVisible, index }: { skill: AutoCalculatedSkill;
           <div className="cursor-help">
             <div className="flex justify-between mb-2">
               <span className="text-foreground font-medium">{skill.name}</span>
-              <span className="text-primary font-semibold">{width}%</span>
+              <span className="text-primary font-semibold">{skill.percentage}%</span>
             </div>
             <div className="h-3 bg-secondary rounded-full overflow-hidden">
               <div
@@ -64,9 +68,13 @@ function AnimatedProgressBar({ skill, isVisible }: { skill: Skill; isVisible: bo
   const [width, setWidth] = useState(0)
 
   useEffect(() => {
+    if (skill.level === 0) return
+
     if (isVisible) {
       const timeout = setTimeout(() => setWidth(skill.level), 100)
       return () => clearTimeout(timeout)
+    } else {
+      setWidth(skill.level)
     }
   }, [isVisible, skill.level])
 
@@ -74,7 +82,7 @@ function AnimatedProgressBar({ skill, isVisible }: { skill: Skill; isVisible: bo
     <div>
       <div className="flex justify-between mb-2">
         <span className="text-foreground">{skill.name}</span>
-        <span className="text-primary font-semibold">{isVisible ? width : 0}%</span>
+        <span className="text-primary font-semibold">{skill.level}%</span>
       </div>
       <div className="h-2 bg-secondary rounded-full overflow-hidden">
         <div
@@ -89,7 +97,7 @@ function AnimatedProgressBar({ skill, isVisible }: { skill: Skill; isVisible: bo
 }
 
 export function SkillsSection() {
-  const { ref, isVisible } = useScrollAnimation({ threshold: 0.05 }) // Lower threshold to ensure it fires
+  const { ref, isVisible } = useScrollAnimation({ threshold: 0, rootMargin: "-50px 0px" })
   const { createParticles } = useClickEffect()
   const { skills: manualSkills, isLoading } = useSkillsSync()
 
@@ -185,7 +193,7 @@ export function SkillsSection() {
   }
 
   return (
-    <section id="skills" className="py-20 bg-secondary/30 relative overflow-hidden">
+    <section id="skills" ref={ref} className="py-20 bg-secondary/30 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(6,182,212,0.08),transparent_50%)]" />
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
@@ -216,7 +224,7 @@ export function SkillsSection() {
           </FadeIn>
         ) : (
           <>
-            <div ref={ref} className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
               <FadeIn direction="right" delay={0.2}>
                 <div>
                   <div className="flex items-center gap-2 mb-6">

@@ -6,6 +6,7 @@ export async function GET() {
         const skills = await prisma.skill.findMany()
         return NextResponse.json(skills)
     } catch (error) {
+        console.error("GET /api/skills error:", error)
         return NextResponse.json({ error: "Failed to fetch skills" }, { status: 500 })
     }
 }

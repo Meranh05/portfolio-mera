@@ -39,15 +39,17 @@ export default function AdminLoginPage() {
 
     // Simulate login
     setTimeout(() => {
-      if (email === "admin@example.com" && password === "admin123") {
+      if (email === "admin@gmail.com" && password === "admin123") {
         toast.success("Đăng nhập thành công!", {
           description: "Chào mừng bạn trở lại, Admin!",
         })
         localStorage.setItem("admin_logged_in", "true")
+        // Set cookie for middleware2585
+        document.cookie = "admin_session=true; path=/; max-age=86400; SameSite=Lax"
         router.push("/admin")
       } else {
         toast.error("Đăng nhập thất bại!", {
-          description: "Email hoặc mật khẩu không đúng. Thử: admin@example.com / admin123",
+          description: "Email hoặc mật khẩu không đúng. Thử: admin@gmail.com / admin123",
         })
       }
       setIsLoading(false)

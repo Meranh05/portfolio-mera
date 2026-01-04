@@ -794,20 +794,21 @@ export function calculateAutoSkills(): AutoCalculatedSkill[] {
   })
 
   // Denominator: Total weighted usage instances
-  // We use max usage of any skill to determine 100% or relative to projects
-  const totalRelevantEntities = projects.length + experiences.length + repos.length
+  // We use max usage of any skill to determine relative scale for a better portfolio look
+  const usageCounts = Object.values(skillCount).map(s => s.count)
+  const maxUsage = usageCounts.length > 0 ? Math.max(...usageCounts) : 0
 
-  // Convert to array and sort
   const skills = Object.entries(skillCount)
     .map(([name, { count, sources }]) => {
-      // Logic: if a skill is in half of projects, it's 50%
-      let percentage = totalRelevantEntities > 0
-        ? Math.round((count / totalRelevantEntities) * 100)
+      // Logic: the most used skill is 100%, others are relative to it
+      let percentage = maxUsage > 0
+        ? Math.round((count / maxUsage) * 100)
         : 0
 
       // Ensure reasonable display
       if (percentage > 100) percentage = 100
-      if (percentage < 10 && count > 0) percentage = 15 // Ensure bar is definitely visible even for small ratios
+      // If used at least once, show at least 15% to make the bar visible
+      if (percentage < 15 && count > 0) percentage = 15
 
       return {
         name,
