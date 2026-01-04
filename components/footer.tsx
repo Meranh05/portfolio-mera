@@ -2,7 +2,7 @@
 
 import type React from "react"
 import Link from "next/link"
-import { Code2, Github, Linkedin, Mail, Globe, Send, MessageSquare, Link as LinkIcon } from "lucide-react"
+import { Code2, Github, Linkedin, Mail, Globe, Send, MessageSquare, Facebook, Link as LinkIcon } from "lucide-react"
 import { useClickEffect } from "@/hooks/use-click-effect"
 import { toast } from "sonner"
 import { useAboutSync } from "@/hooks/use-portfolio-sync"
@@ -60,7 +60,7 @@ export function Footer() {
                 email: Mail,
                 github: Github,
                 linkedin: Linkedin,
-                facebook: Globe,
+                facebook: Facebook,
                 telegram: Send,
                 zalo: MessageSquare,
               }

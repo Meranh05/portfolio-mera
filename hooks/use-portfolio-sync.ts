@@ -30,7 +30,7 @@ export function useSkillsSync() {
     setIsLoading(false)
 
     const unsubscribe = subscribeSyncEvent((key) => {
-      if (key === "portfolio_skills" || key === "reset-all") {
+      if (key === "portfolio_skills" || key === "reset-all" || key === "sync-all") {
         refresh()
       }
     })
@@ -59,7 +59,8 @@ export function useAutoSkillsSync() {
         key === "portfolio_projects" ||
         key === "portfolio_experiences" ||
         key === "portfolio_github_repos" ||
-        key === "reset-all"
+        key === "reset-all" ||
+        key === "sync-all"
       ) {
         refresh()
       }
@@ -84,7 +85,7 @@ export function useAboutSync() {
     setIsLoading(false)
 
     const unsubscribe = subscribeSyncEvent((key) => {
-      if (key === "portfolio_about" || key === "reset-all") {
+      if (key === "portfolio_about" || key === "reset-all" || key === "sync-all") {
         refresh()
       }
     })
@@ -108,7 +109,7 @@ export function useProjectsSync() {
     setIsLoading(false)
 
     const unsubscribe = subscribeSyncEvent((key) => {
-      if (key === "portfolio_projects" || key === "reset-all") {
+      if (key === "portfolio_projects" || key === "reset-all" || key === "sync-all") {
         refresh()
       }
     })
@@ -132,7 +133,7 @@ export function useExperiencesSync() {
     setIsLoading(false)
 
     const unsubscribe = subscribeSyncEvent((key) => {
-      if (key === "portfolio_experiences" || key === "reset-all") {
+      if (key === "portfolio_experiences" || key === "reset-all" || key === "sync-all") {
         refresh()
       }
     })
@@ -156,7 +157,7 @@ export function useGitHubReposSync() {
     setIsLoading(false)
 
     const unsubscribe = subscribeSyncEvent((key) => {
-      if (key === "portfolio_github_repos" || key === "reset-all") {
+      if (key === "portfolio_github_repos" || key === "reset-all" || key === "sync-all") {
         refresh()
       }
     })

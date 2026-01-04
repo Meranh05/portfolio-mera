@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowRight, Check, Code2, Copy, Github, Globe, Loader2, Mail, Phone, Send } from "lucide-react"
+import { ArrowRight, Check, Code2, Copy, Github, Globe, Linkedin, Loader2, Mail, Phone, Send, Facebook, MessageSquare } from "lucide-react"
 import { FadeIn } from "@/components/animations/fade-in"
 import { useClickEffect } from "@/hooks/use-click-effect"
 import { MagneticButton } from "@/components/animations/magnetic-button"
@@ -173,12 +173,12 @@ export function ContactSection() {
                     const platform = social.platform.toLowerCase()
                     const iconMap: Record<string, any> = {
                       github: Github,
-                      linkedin: Globe,
+                      linkedin: Linkedin, // Updated to use Linkedin icon if available, but looking at line 10 it's not there. Wait, I should add Linkedin to imports too.
                       twitter: Code2,
-                      facebook: Globe,
+                      facebook: Facebook,
                       telegram: Send,
                       gmail: Mail,
-                      zalo: Globe,
+                      zalo: MessageSquare,
                     }
                     const Icon = iconMap[platform] || Globe
                     const label = social.platform.charAt(0).toUpperCase() + social.platform.slice(1)

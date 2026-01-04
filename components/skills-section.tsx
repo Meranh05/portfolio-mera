@@ -89,24 +89,28 @@ function AnimatedProgressBar({ skill, isVisible }: { skill: Skill; isVisible: bo
 }
 
 export function SkillsSection() {
-  const { ref, isVisible } = useScrollAnimation()
+  const { ref, isVisible } = useScrollAnimation({ threshold: 0.05 }) // Lower threshold to ensure it fires
   const { createParticles } = useClickEffect()
   const { skills: manualSkills, isLoading } = useSkillsSync()
 
   const [autoSkills, setAutoSkills] = useState<AutoCalculatedSkill[]>([])
 
   const loadAutoSkills = useCallback(() => {
+    // getAutoSkills now forces calculation
     setAutoSkills(getAutoSkills())
   }, [])
 
   useEffect(() => {
     loadAutoSkills()
     const unsubscribe = subscribeSyncEvent((key) => {
+      // If sync-all or any data key changes, refresh EVERYTHING
       if (
+        key === "sync-all" ||
         key === "portfolio_auto_skills" ||
         key === "portfolio_projects" ||
         key === "portfolio_experiences" ||
         key === "portfolio_github_repos" ||
+        key === "portfolio_about" ||
         key === "reset-all"
       ) {
         loadAutoSkills()
@@ -132,10 +136,16 @@ export function SkillsSection() {
         "Kotlin",
         "HTML",
         "CSS",
+        "HTML/CSS",
         "SQL",
+        "React",
+        "Next.js",
+        "Vue",
+        "TailwindCSS",
       ].includes(s.name),
     )
-    .slice(0, 6)
+    .slice(0, 10) // Show more languages/frameworks
+
 
   const autoTools = autoSkills.filter(
     (s) =>
@@ -314,10 +324,10 @@ export function SkillsSection() {
                             transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg relative overflow-hidden`}
                           style={{ boxShadow: "0 0 0 rgba(6, 182, 212, 0)" }}
                           onMouseEnter={(e) => {
-                            ;(e.target as HTMLElement).style.boxShadow = "0 0 20px rgba(6, 182, 212, 0.4)"
+                            ; (e.target as HTMLElement).style.boxShadow = "0 0 20px rgba(6, 182, 212, 0.4)"
                           }}
                           onMouseLeave={(e) => {
-                            ;(e.target as HTMLElement).style.boxShadow = "0 0 0 rgba(6, 182, 212, 0)"
+                            ; (e.target as HTMLElement).style.boxShadow = "0 0 0 rgba(6, 182, 212, 0)"
                           }}
                         >
                           <div className="w-16 h-16 rounded-full bg-card flex items-center justify-center group-hover:bg-secondary transition-colors">

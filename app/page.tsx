@@ -11,6 +11,7 @@ import { BackgroundParticles } from "@/components/background-particles"
 import { ScrollToTop } from "@/components/scroll-to-top"
 import { ViewTracker } from "@/components/view-tracker"
 
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background relative">

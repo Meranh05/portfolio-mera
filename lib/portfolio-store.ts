@@ -104,17 +104,25 @@ const SYNC_EVENT = "portfolio-sync"
 
 export function dispatchSyncEvent(key: string) {
   if (typeof window === "undefined") return
+
+  // Dispatch custom event for the current tab
   window.dispatchEvent(new CustomEvent(SYNC_EVENT, { detail: { key } }))
-  const currentValue = localStorage.getItem(key)
-  localStorage.setItem(key, currentValue || "")
+
+  // Update a separate sync key to force 'storage' event in other tabs
+  // even if the main key's value hasn't changed significantly or same
+  localStorage.setItem("portfolio_sync_heartbeat", Date.now().toString())
 }
 
 export function subscribeSyncEvent(callback: (key: string) => void): () => void {
-  if (typeof window === "undefined") return () => {}
+  if (typeof window === "undefined") return () => { }
 
   const handleCustomEvent = (e: CustomEvent) => callback(e.detail.key)
   const handleStorageEvent = (e: StorageEvent) => {
-    if (e.key) callback(e.key)
+    if (e.key === "portfolio_sync_heartbeat") {
+      callback("sync-all")
+    } else if (e.key) {
+      callback(e.key)
+    }
   }
 
   window.addEventListener(SYNC_EVENT as any, handleCustomEvent)
@@ -468,6 +476,8 @@ const techColorMap: Record<string, string> = {
   Bootstrap: "bg-purple-500",
   SCSS: "bg-pink-400",
   GSAP: "bg-green-400",
+  "HTML/CSS": "bg-orange-600",
+  "C": "bg-blue-700",
 
   // Databases
   MongoDB: "bg-green-500",
@@ -499,9 +509,21 @@ export function calculateAutoSkills(): AutoCalculatedSkill[] {
 
   const skillCount: Record<string, { count: number; sources: Set<string> }> = {}
 
+  // Helper to normalize tech names
+  const normalizeTech = (name: string | null) => {
+    if (!name) return ""
+    const trimmed = name.trim()
+    const standardName = Object.keys(techColorMap).find(
+      (k) => k.toLowerCase() === trimmed.toLowerCase()
+    )
+    return standardName || trimmed
+  }
+
   // Count techs from projects
   projects.forEach((project) => {
-    project.techs.forEach((tech) => {
+    // Dedup techs within same project
+    const uniqueTechs = new Set(project.techs.map(t => normalizeTech(t)).filter(t => !!t))
+    uniqueTechs.forEach((tech) => {
       if (!skillCount[tech]) {
         skillCount[tech] = { count: 0, sources: new Set() }
       }
@@ -512,7 +534,9 @@ export function calculateAutoSkills(): AutoCalculatedSkill[] {
 
   // Count techs from experiences
   experiences.forEach((exp) => {
-    exp.techs.forEach((tech) => {
+    // Dedup techs within same experience
+    const uniqueTechs = new Set(exp.techs.map(t => normalizeTech(t)).filter(t => !!t))
+    uniqueTechs.forEach((tech) => {
       if (!skillCount[tech]) {
         skillCount[tech] = { count: 0, sources: new Set() }
       }
@@ -524,26 +548,42 @@ export function calculateAutoSkills(): AutoCalculatedSkill[] {
   // Count languages from GitHub repos
   repos.forEach((repo) => {
     if (repo.language) {
-      if (!skillCount[repo.language]) {
-        skillCount[repo.language] = { count: 0, sources: new Set() }
+      const normalized = normalizeTech(repo.language)
+      if (normalized) {
+        if (!skillCount[normalized]) {
+          skillCount[normalized] = { count: 0, sources: new Set() }
+        }
+        skillCount[normalized].count++
+        skillCount[normalized].sources.add(`github:${repo.name}`)
       }
-      skillCount[repo.language].count++
-      skillCount[repo.language].sources.add(`github:${repo.name}`)
     }
   })
 
-  // Calculate total
-  const totalCount = Object.values(skillCount).reduce((sum, { count }) => sum + count, 0)
+  // Denominator: Total weighted usage instances
+  // We use max usage of any skill to determine 100% or relative to projects
+  const totalRelevantEntities = projects.length + experiences.length + repos.length
 
   // Convert to array and sort
   const skills = Object.entries(skillCount)
-    .map(([name, { count, sources }]) => ({
-      name,
-      count,
-      percentage: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
-      sources: Array.from(sources),
-      color: getTechColor(name),
-    }))
+    .map(([name, { count, sources }]) => {
+      // Logic: if a skill is in half of projects, it's 50%
+      let percentage = totalRelevantEntities > 0
+        ? Math.round((count / totalRelevantEntities) * 100)
+        : 0
+
+      // Ensure reasonable display
+      if (percentage > 100) percentage = 100
+      if (percentage < 10 && count > 0) percentage = 15 // Ensure bar is definitely visible even for small ratios
+
+      return {
+        name,
+        count,
+        percentage,
+        sources: Array.from(sources),
+        color: getTechColor(name),
+      }
+    })
+    .filter(s => s.count > 0)
     .sort((a, b) => b.count - a.count)
 
   return skills
@@ -551,8 +591,13 @@ export function calculateAutoSkills(): AutoCalculatedSkill[] {
 
 export function getAutoSkills(): AutoCalculatedSkill[] {
   if (typeof window === "undefined") return []
-  const stored = localStorage.getItem(AUTO_SKILLS_KEY)
-  return stored ? JSON.parse(stored) : calculateAutoSkills()
+  // Always recalculate to ensure fresh formula and data
+  const skills = calculateAutoSkills()
+  // Quietly update storage
+  if (typeof window !== "undefined") {
+    localStorage.setItem(AUTO_SKILLS_KEY, JSON.stringify(skills))
+  }
+  return skills
 }
 
 export function calculateAndSaveAutoSkills(): AutoCalculatedSkill[] {
