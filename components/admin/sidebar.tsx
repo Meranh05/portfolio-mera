@@ -67,7 +67,7 @@ export function AdminSidebar() {
           </Avatar>
           <div>
             <p className="font-semibold text-foreground group-hover:text-primary transition-colors">Admin Console</p>
-            <p className="text-sm text-muted-foreground">Welcome back, Alex</p>
+            <p className="text-sm text-muted-foreground">Welcome back, Mera </p>
           </div>
         </div>
       </div>
