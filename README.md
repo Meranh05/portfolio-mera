@@ -88,7 +88,6 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
       allow read, write: if true; // Lưu ý: Cấu hình này mở công khai (cho Dev/Test)
-      // Trong Production, bạn nên giới hạn quyền write chỉ cho Admin đã đăng nhập.
     }
   }
 }
