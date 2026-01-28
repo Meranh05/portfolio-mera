@@ -72,7 +72,6 @@ Truy cập `http://localhost:3000` để xem kết quả.
 
 - `app/`: Chứa các trang (Pages) theo cấu trúc App Router của Next.js.
   - `admin/`: Khu vực quản trị viên.
-  - `api/`: (Đã loại bỏ - chuyển sang Client-side fetching).
 - `components/`: Các thành phần giao diện (Button, Card, Section...).
   - `admin/`: Các component riêng cho trang Admin.
   - `ui/`: Các component cơ bản từ Shadcn UI.
